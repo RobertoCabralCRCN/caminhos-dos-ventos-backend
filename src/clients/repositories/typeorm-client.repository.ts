@@ -29,7 +29,18 @@ export class TypeOrmClientRepository implements IClientRepository {
   }
 
   async create(createClientDto: CreateClientDto): Promise<Cliente> {
+    console.log("💾 REPOSITORY: Criando entidade Cliente...");
+    console.log("📊 Dados para criação:", JSON.stringify(createClientDto, null, 2));
+    
     const client = this.clientsRepository.create(createClientDto);
-    return this.clientsRepository.save(client);
+    console.log("🏗️ Entidade criada:", JSON.stringify(client, null, 2));
+    
+    console.log("💿 Salvando no banco de dados...");
+    const savedClient = await this.clientsRepository.save(client);
+    console.log("✅ Cliente salvo no banco com ID:", savedClient.id);
+    console.log("📋 Dados salvos:", JSON.stringify(savedClient, null, 2));
+    
+    return savedClient;
   }
 }
+

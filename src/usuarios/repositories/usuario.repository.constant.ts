@@ -1,0 +1,3 @@
+export const USUARIO_REPOSITORY = 'USUARIO_REPOSITORY';
+
+

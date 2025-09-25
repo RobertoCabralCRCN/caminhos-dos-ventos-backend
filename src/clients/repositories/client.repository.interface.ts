@@ -8,3 +8,4 @@ export interface IClientRepository {
   findAll(): Promise<Cliente[]>;
   create(createClientDto: CreateClientDto): Promise<Cliente>;
 }
+

@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsNotEmpty, MinLength } from "class-validator";
+import { IsString, IsEmail, IsNotEmpty, MinLength, Matches } from "class-validator";
 
 export class CreateClientDto {
   @IsString()
@@ -12,11 +12,19 @@ export class CreateClientDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(6, { message: "A senha deve ter pelo menos 6 caracteres" })
+  @Matches(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+    { message: "A senha deve conter pelo menos: 1 letra minúscula, 1 letra maiúscula, 1 número e 1 caractere especial" }
+  )
   senha!: string;
 
   @IsString()
   @IsNotEmpty()
   rua!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  numero!: string;
 
   @IsString()
   @IsNotEmpty()

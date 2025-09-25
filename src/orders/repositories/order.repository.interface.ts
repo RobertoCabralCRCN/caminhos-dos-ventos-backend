@@ -7,3 +7,4 @@ export interface IOrderRepository {
   findAll(): Promise<Pedido[]>;
   create(createOrderDto: CreateOrderDto, clienteId: string): Promise<Pedido>;
 }
+

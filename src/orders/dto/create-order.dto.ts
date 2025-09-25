@@ -38,4 +38,14 @@ export class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
   cep!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  numero!: string;
+
+  @IsString()
+  observacoes?: string;
+
+  @IsString()
+  metodoPagamento?: string;
 }
