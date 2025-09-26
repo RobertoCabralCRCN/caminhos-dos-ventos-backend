@@ -46,7 +46,8 @@
     "passport-local": "^1.0.0",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "twilio": "^5.10.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

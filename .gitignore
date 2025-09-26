@@ -30,3 +30,12 @@ lerna-debug.log*
 API_CURL_TESTS.md
 TESTE_API_RELATORIO.md
 
+# Configuration Documentation
+CONFIGURACAO_NOTIFICACOES.md
+
+# Environment Examples
+env.example
+
+# Windows specific files
+nul
+

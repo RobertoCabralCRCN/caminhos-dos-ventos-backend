@@ -50,18 +50,19 @@ export class OrdersService {
 
     // Enviar notificações
     try {
-      // Notificar cliente via WhatsApp
+      // Notificar cliente via WhatsApp e Email
       await this.messagingService.sendOrderConfirmationToClient(
         client.telefone,
+        client.email,
         client.nome,
         savedOrder.id,
         totalPrice + deliveryFee
       );
 
-      // Notificar admin (simulando dados do admin)
+      // Notificar admin (dados corretos do admin)
       await this.messagingService.sendOrderNotificationToAdmin(
-        "admin@caminhodosventos.com", // Email do admin
-        "+5511999999999", // Telefone do admin
+        "roberto.cabral.cn@gmail.com", // Email do admin CORRIGIDO
+        "+5511971197113", // Telefone do admin
         savedOrder.id,
         client.nome,
         totalPrice + deliveryFee,

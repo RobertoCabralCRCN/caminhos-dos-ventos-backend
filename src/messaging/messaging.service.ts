@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import * as nodemailer from "nodemailer";
 import axios from "axios";
+import twilio from "twilio";
 
 @Injectable()
 export class MessagingService {
@@ -22,11 +23,13 @@ export class MessagingService {
 
   async sendOrderConfirmationToClient(
     clientPhone: string,
+    clientEmail: string,
     clientName: string,
     orderNumber: string,
     orderTotal: number
   ): Promise<void> {
-    const message = `🍃 *Caminho dos Ventos* 🍃
+    // Mensagem WhatsApp
+    const whatsappMessage = `🍃 *Caminho dos Ventos* 🍃
 
 Olá ${clientName}! 
 
@@ -39,8 +42,28 @@ Acompanhe o status do seu pedido em nosso sistema.
 
 Obrigado por escolher o Caminho dos Ventos! 🙏`;
 
-    await this.sendWhatsAppMessage(clientPhone, message);
-    this.logger.log(`WhatsApp enviado para cliente ${clientName} - Pedido ${orderNumber}`);
+    // Email para o cliente
+    const emailSubject = `Confirmação de Pedido - #${orderNumber}`;
+    const emailBody = `
+      <h2>🍃 Caminho dos Ventos - Pedido Confirmado</h2>
+      
+      <p>Olá ${clientName}!</p>
+      
+      <p>Seu pedido foi recebido com sucesso!</p>
+      
+      <p><strong>Número do Pedido:</strong> ${orderNumber}</p>
+      <p><strong>Valor Total:</strong> R$ ${orderTotal.toFixed(2)}</p>
+      
+      <p>Acompanhe o status do seu pedido em nosso sistema.</p>
+      
+      <p>Obrigado por escolher o Caminho dos Ventos! 🙏</p>
+    `;
+
+    // Enviar WhatsApp e Email para o cliente
+    await this.sendWhatsAppMessage(clientPhone, whatsappMessage);
+    await this.sendEmail(clientEmail, emailSubject, emailBody);
+    
+    this.logger.log(`Notificações enviadas para cliente ${clientName} - Pedido ${orderNumber}`);
   }
 
   async sendOrderNotificationToAdmin(
@@ -129,30 +152,81 @@ Obrigado por escolher o Caminho dos Ventos! 🙏`;
     }
   }
 
+  private formatPhoneForWhatsApp(phone: string): string {
+    // Remove todos os caracteres não numéricos
+    let cleanPhone = phone.replace(/\D/g, '');
+    
+    // Se começar com 11 (DDD de SP), adiciona 55 (Brasil)
+    if (cleanPhone.startsWith('11') && cleanPhone.length === 11) {
+      cleanPhone = '55' + cleanPhone;
+    }
+    // Se já tem 55, mantém
+    else if (cleanPhone.startsWith('55') && cleanPhone.length === 13) {
+      // Já está correto
+    }
+    // Se tem 10 dígitos (sem DDD), adiciona 5511
+    else if (cleanPhone.length === 10) {
+      cleanPhone = '5511' + cleanPhone;
+    }
+    
+    // Adiciona o + no início
+    return '+' + cleanPhone;
+  }
+
   private async sendWhatsAppMessage(phone: string, message: string): Promise<void> {
     try {
-      // Aqui você pode integrar com WhatsApp Business API, Twilio, ou outro serviço
-      // Por enquanto, vamos simular o envio
-      const whatsappApiUrl = this.configService.get<string>("WHATSAPP_API_URL");
-      const whatsappToken = this.configService.get<string>("WHATSAPP_TOKEN");
+      const twilioAccountSid = this.configService.get<string>("TWILIO_ACCOUNT_SID");
+      const twilioAuthToken = this.configService.get<string>("TWILIO_AUTH_TOKEN");
+      const twilioWhatsAppNumber = this.configService.get<string>("TWILIO_WHATSAPP_NUMBER");
       
-      if (whatsappApiUrl && whatsappToken) {
-        await axios.post(whatsappApiUrl, {
-          to: phone,
-          message: message
-        }, {
-          headers: {
-            'Authorization': `Bearer ${whatsappToken}`,
-            'Content-Type': 'application/json'
-          }
+      // Verificar se as credenciais são válidas (não são placeholders)
+      const hasValidCredentials = twilioAccountSid && 
+                                 twilioAuthToken && 
+                                 twilioWhatsAppNumber &&
+                                 !twilioAccountSid.includes('1234567890abcdef') &&
+                                 !twilioAuthToken.includes('seu-') &&
+                                 twilioAccountSid.startsWith('AC'); // Só aceita AC (US é User SID, não Account SID)
+      
+      if (hasValidCredentials) {
+        // Usar Twilio para WhatsApp
+        const client = twilio(twilioAccountSid, twilioAuthToken);
+        
+        // Formatar número para WhatsApp
+        const formattedPhone = this.formatPhoneForWhatsApp(phone);
+        const whatsappPhone = `whatsapp:${formattedPhone}`;
+        
+        this.logger.log(`[DEBUG] Telefone original: ${phone}`);
+        this.logger.log(`[DEBUG] Telefone formatado: ${formattedPhone}`);
+        this.logger.log(`[DEBUG] WhatsApp formatado: ${whatsappPhone}`);
+        
+        await client.messages.create({
+          from: twilioWhatsAppNumber,
+          to: whatsappPhone,
+          body: message
         });
+        
+        this.logger.log(`WhatsApp enviado via Twilio para ${formattedPhone}`);
       } else {
-        // Simulação para desenvolvimento
-        this.logger.log(`[SIMULAÇÃO] WhatsApp para ${phone}: ${message}`);
+        // Fallback para simulação se Twilio não estiver configurado corretamente
+        const formattedPhone = this.formatPhoneForWhatsApp(phone);
+        this.logger.log(`[SIMULAÇÃO] WhatsApp para ${formattedPhone}: ${message}`);
+        this.logger.log(`[INFO] Configure credenciais válidas do Twilio para envio real`);
+        
+        if (twilioAccountSid && twilioAccountSid.startsWith('US')) {
+          this.logger.log(`[INFO] Account SID: User SID detectado (US) - Precisa do Account SID (AC)`);
+          this.logger.log(`[INFO] No Twilio Console, procure por 'Account SID' (não 'User SID')`);
+        } else {
+          this.logger.log(`[INFO] Account SID: ${twilioAccountSid ? (twilioAccountSid.startsWith('AC') ? 'Válido' : 'Inválido - deve começar com AC') : 'Não configurado'}`);
+        }
+        
+        this.logger.log(`[INFO] Auth Token: ${twilioAuthToken ? 'Configurado' : 'Não configurado'}`);
+        this.logger.log(`[INFO] WhatsApp Number: ${twilioWhatsAppNumber ? 'Configurado' : 'Não configurado'}`);
       }
+      
     } catch (error) {
       this.logger.error(`Erro ao enviar WhatsApp para ${phone}:`, error);
-      throw error;
+      // Não falhar o pedido se WhatsApp falhar
+      this.logger.log(`[FALLBACK] WhatsApp falhou, mas pedido continua válido`);
     }
   }
 
