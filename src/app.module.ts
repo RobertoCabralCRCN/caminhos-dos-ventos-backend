@@ -20,6 +20,7 @@ import { ProdutosModule } from "./produtos/produtos.module";
 import { UsuariosModule } from "./usuarios/usuarios.module";
 import { MessagingModule } from "./messaging/messaging.module";
 import { EstoqueModule } from "./estoque/estoque.module";
+import { PaymentsModule } from "./payments/payments.module";
 import { AppController } from "./app.controller";
 import { HealthController } from "./health/health.controller";
 import { UsersController } from "./users/users.controller";
@@ -47,6 +48,7 @@ import { UsersController } from "./users/users.controller";
     UsuariosModule,
     MessagingModule,
     EstoqueModule,
+    PaymentsModule,
   ],
   controllers: [AppController, HealthController, UsersController],
 })
