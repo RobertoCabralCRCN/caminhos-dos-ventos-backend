@@ -19,3 +19,4 @@ import { USUARIO_REPOSITORY } from "./repositories/usuario.repository.constant";
 export class UsuariosModule {}
 
 
+

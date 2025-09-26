@@ -22,7 +22,7 @@ import { MessagingModule } from "./messaging/messaging.module";
 import { EstoqueModule } from "./estoque/estoque.module";
 import { PaymentsModule } from "./payments/payments.module";
 import { AppController } from "./app.controller";
-import { HealthController } from "./health/health.controller";
+import { HealthModule } from "./health/health.module";
 import { UsersController } from "./users/users.controller";
 
 @Module({
@@ -49,7 +49,8 @@ import { UsersController } from "./users/users.controller";
     MessagingModule,
     EstoqueModule,
     PaymentsModule,
+    HealthModule,
   ],
-  controllers: [AppController, HealthController, UsersController],
+  controllers: [AppController, UsersController],
 })
 export class AppModule {}

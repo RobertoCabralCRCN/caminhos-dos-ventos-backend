@@ -27,3 +27,4 @@ import { ESTOQUE_REPOSITORY } from "./repositories/estoque.repository.constant";
 export class EstoqueModule {}
 
 
+

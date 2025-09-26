@@ -83,3 +83,4 @@ ORDER BY table_name;
 -- SELECT * FROM cliente WHERE email = 'teste@teste.com';
 
 
+
